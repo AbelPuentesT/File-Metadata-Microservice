@@ -1,0 +1,65 @@
+import movies from '../movies.json' with {type: 'json'}
+import { randomUUID } from 'node:crypto'
+
+/**
+ * Represents a MovieModel.
+ */
+export class MovieModel {
+  /**
+   * Retrieves all movies based on the provided genre and director.
+   * If genre is provided, filters movies by genre.
+   * If director is provided, filters movies by director.
+   * If neither genre nor director is provided, returns all movies.
+   * @param {Object} options - The options for filtering movies.
+   * @param {string} options.genre - The genre to filter movies by.
+   * @param {string} options.director - The director to filter movies by.
+   * @returns {Array} - An array of movies that match the provided filters.
+   */
+  static getAll = async (genre, director) => {
+    let result = movies;
+
+    if (genre) {
+      result = result.filter(x => x.genre.includes(genre));
+    }
+    if (director) {
+      result = result.filter(x => x.director.includes(director));
+    }
+
+    return result;
+  }
+
+  static async getById(id) {
+    return movies.find(movie => movie.id === id);
+  }
+
+  static async create(movie) {
+    const newMovie = {
+      id: randomUUID(),
+      ...movie
+    };
+    movies.push(newMovie);
+    return newMovie;
+  }
+
+  static async update(id, movieUpdates) {
+    const movieIndex = movies.findIndex(x => x.id === id);
+    if (movieIndex === -1) {
+      return null;
+    }
+    const updatedMovie = {
+      ...movies[movieIndex],
+      ...movieUpdates
+    };
+    movies[movieIndex] = updatedMovie;
+    return updatedMovie;
+  }
+
+  static async delete(id) {
+    const movieIndex = movies.findIndex(x => x.id === id);
+    if (movieIndex === -1) {
+      return null;
+    }
+    const removedMovie = movies.splice(movieIndex, 1);
+    return removedMovie;
+  }
+}

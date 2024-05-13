@@ -1,0 +1,64 @@
+import { MovieModel } from './movie.js';
+import { randomUUID } from 'node:crypto'
+import movies from '../movies.json' with {type: 'json'}
+// Mock data
+
+
+// Mock UUID
+jest.mock('crypto', () => ({
+  randomUUID: jest.fn(() => 'mock-uuid'),
+}));
+
+describe('MovieModel', () => {
+  describe('getAll', () => {
+    it('should return all movies if no filters are provided', async () => {
+      expect(await MovieModel.getAll({})).toEqual(movies);
+    });
+
+    it('should return movies filtered by genre', async () => {
+      expect(await MovieModel.getAll({ genre: 'Drama' })).toEqual([movies[0]]);
+    });
+
+    it('should return movies filtered by director', async () => {
+      expect(await MovieModel.getAll({ director: 'Christopher Nolan' })).toEqual([movies[1]]);
+    });
+  });
+
+  describe('getById', () => {
+    it('should return the movie with the given id', () => {
+      expect(MovieModel.getById('1')).toEqual(movies[0]);
+    });
+
+    it('should return undefined if no movie with the given id exists', () => {
+      expect(MovieModel.getById('non-existent-id')).toBeUndefined();
+    });
+  });
+
+  describe('create', () => {
+    it('should create a new movie and return it', () => {
+      const newMovie = { genre: 'Horror', director: 'Director4' };
+      expect(MovieModel.create(newMovie)).toEqual({ id: 'mock-uuid', ...newMovie });
+    });
+  });
+
+  describe('update', () => {
+    it('should update the movie with the given id and return it', async () => {
+      const updatedMovie = { genre: 'Romance' };
+      expect(await MovieModel.update('1', updatedMovie)).toEqual({ ...movies[0], ...updatedMovie });
+    });
+
+    it('should return null if no movie with the given id exists', async () => {
+      expect(await MovieModel.update('non-existent-id', {})).toBeNull();
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete the movie with the given id and return it', async () => {
+      expect(await MovieModel.delete('1')).toEqual([movies[0]]);
+    });
+
+    it('should return null if no movie with the given id exists', async () => {
+      expect(await MovieModel.delete('non-existent-id')).toBeNull();
+    });
+  });
+});
